@@ -6,7 +6,7 @@ __author__ = 'VMware, Inc.'
 __copyright__ = 'Copyright 2019 VMware, Inc. All rights reserved.'
 
 import argparse
-import boto3
+import ibm_boto3
 import datetime
 import hashlib
 import logging
@@ -15,7 +15,7 @@ import os
 import uuid
 import sys
 
-from botocore.client import ClientError
+from ibm_botocore.client import ClientError
 from dateutil.tz import tzutc
 
 VCSP_VERSION = 2
@@ -368,9 +368,10 @@ def make_vcsp_s3(lib_name, lib_path, skip_cert):
     paths = lib_path.split("/", 1)
     bucket_name = paths[0]
     lib_folder_path = paths[1]
-
-    s3 = boto3.resource("s3")
-    s3_client = boto3.client('s3')
+    
+    COS_ENDPOINT = "https://s3.jp-tok.cloud-object-storage.appdomain.cloud"
+    s3 = ibm_boto3.resource("s3",endpoint_url=COS_ENDPOINT)
+    s3_client = ibm_boto3.client("s3",endpoint_url=COS_ENDPOINT)
 
     # check if the given s3 bucket exists
     try:
