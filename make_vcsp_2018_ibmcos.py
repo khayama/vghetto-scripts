@@ -27,7 +27,6 @@ ITEMS_FILE = ''.join(("items", os.extsep, FORMAT))
 ITEM_FILE = ''.join(("item", os.extsep, FORMAT))
 VCSP_TYPE_OVF = "vcsp.ovf"
 VCSP_TYPE_ISO = "vcsp.iso"
-VCSP_TYPE_OVA = "vcsp.ova"
 VCSP_TYPE_OTHER = "vcsp.other"
 
 logger = logging.getLogger(__name__)
@@ -207,12 +206,10 @@ def _dir2item_s3(s3_client, bucket_name, path, item_name, skip_cert, lib_id, old
                         is_vapp = "true"
                 except:
                     logger.error("Failed to read ovf descriptor: %s" % file_path)
-        if vcsp_type != VCSP_TYPE_OVF and ".iso" not in file_name and ".ova" not in file_name:
+        if vcsp_type != VCSP_TYPE_OVF and ".iso" not in file_name:
             vcsp_type = VCSP_TYPE_OTHER
         if vcsp_type not in [VCSP_TYPE_OVF, VCSP_TYPE_OTHER] and ".iso" in file_name:
             vcsp_type = VCSP_TYPE_ISO  # only if all files are iso, then it is ISO type
-        if vcsp_type not in [VCSP_TYPE_OVF, VCSP_TYPE_OTHER] and ".ova" in file_name:
-            vcsp_type = VCSP_TYPE_OVA  # only if all files are ova, then it is OVA type
 
     for content in response['Contents']:
         file_path = content['Key']
@@ -232,7 +229,7 @@ def _dir2item_s3(s3_client, bucket_name, path, item_name, skip_cert, lib_id, old
             "hrefs": [ href ]
         }
 
-        if vcsp_type in [VCSP_TYPE_ISO, VCSP_TYPE_OVA]:
+        if vcsp_type == VCSP_TYPE_ISO:
             extension_index = file_name.rfind('.')
             child_item_name = file_name[:extension_index]
             # note: it is not necessary to create a child iso item folder if not exist
@@ -244,7 +241,7 @@ def _dir2item_s3(s3_client, bucket_name, path, item_name, skip_cert, lib_id, old
                 continue
             files_items.append(file_json)
     
-    if vcsp_type not in [VCSP_TYPE_ISO, VCSP_TYPE_OVA]:
+    if vcsp_type != VCSP_TYPE_ISO:
         identifier = uuid.uuid4()
         if old_item != "":
             identifier = old_item["id"]
